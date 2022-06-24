@@ -1,13 +1,16 @@
 // import code for Express
 const express = require('express');
+const repeatNTimesWithSpace = require('./utils/stringUtils');
 
 // initialize app
 const app = express();
 
-const studentsController = require('./controllers/studentsController')
+const studentsController = require('./controllers/studentsController');
+const namesController = require('./controllers/namesController');
 
 // Whenever an address comes in with the '/students' path, it will be routed over to the studentsController 
-app.use('/students', studentsController)
+app.use('/students', studentsController);
+app.use('/names', namesController);
 
 // route
 app.get('/', (request, response) => {

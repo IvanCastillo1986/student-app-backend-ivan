@@ -7,17 +7,16 @@ const studentData = require('../studentData.json')
 // Everytime our server gets contacted, there must be a response
 // For every response, there must be a request
 controller.get('/', (req, res) => {
-    res.json(studentData)
-})
+    res.json(studentData);
+});
 
 // write a route that accepts a student id as part of the path, returning an object (JSON), representing the student with that id
 controller.get('/:id', (req, res) => {
     try {
-
         const studentId = req.params.id;
         
         if (typeof Number(studentId) !== 'number') {
-            res.send("student id must be integer")
+            res.send("student id must be integer");
         }
         
         const singleStudent = studentData.students.find(student => {
@@ -27,10 +26,10 @@ controller.get('/:id', (req, res) => {
         if (singleStudent) {
             res.json(singleStudent);
         } else {
-            res.status(404).send("Student not found")
+            res.status(404).send("Student not found");
         }
     } catch(err) {
-        res.status(500).send("An error has occurred")
+        res.status(500).send("An error has occurred");
     }
 });
 
