@@ -44,9 +44,6 @@ controller.get('/', (req, res) => {
     };
 });
 
-// Modify this API so that it takes a min and max id and returns all students by id in that range.
-// Ex:  '/students?min=3&max=10' => all students with id >= 3 && id <= 10
-
 
 // Jordan's version
 // controller.get('/', (req, res) => {
@@ -58,32 +55,86 @@ controller.get('/', (req, res) => {
 //     res.json(studentDataForDelivery);
 // })
 
-// write a route that accepts a student id as part of the path, returning an object (JSON), representing the student with that id
+
 // Gets one student
-controller.get('/:id', (req, res) => {
-    try {
-        const studentId = req.params.id;
-        
-        if (typeof Number(studentId) !== 'number') {
-            res.send("student id must be integer");
+controller.get('/:id', (req, res, next) => {
+    if (!isNaN(req.params.id)) {
+
+        try {
+            const studentId = req.params.id;
+            
+            if (typeof Number(studentId) !== 'number') {
+                res.send("student id must be integer");
+            }
+            
+            const singleStudent = studentData.students.find(student => {
+                return studentId === student.id;
+            });
+            
+            if (singleStudent) {
+                res.json(singleStudent);
+            } else {
+                res.status(404).send("Student not found");
+            }
+        } catch(err) {
+            res.status(500).send("An error has occurred");
         }
         
-        const singleStudent = studentData.students.find(student => {
-            return studentId === student.id;
-        });
-        
-        if (singleStudent) {
-            res.json(singleStudent);
-        } else {
-            res.status(404).send("Student not found");
-        }
-    } catch(err) {
-        res.status(500).send("An error has occurred");
+    } else {
+        next()
     }
 });
 
 
+// Write a route that finds student based on fullName
+// Ex:  app.com/students/ivancastillo
+controller.get('/:fullName', (req, res) => {
+    const { fullName } = req.params
+    
+    if (isNaN(fullName)) {
 
+        console.log(fullName)
+        try {
+            
+            for (let student of studentData.students) {
+                let fullStudentName = student.firstName + student.lastName;
+                
+                if (fullName.toLowerCase() === fullStudentName.toLowerCase()) {
+                    return res.json(student);
+                }
+            };
+            res.send('student name not found');
+        } catch (err) {
+            res.send('Error with path');
+        };
+    } else {
+        next()
+    }
+});
+
+
+// Write a route to get the grade average of a student by their id
+// Ex:  app.com/students/3/gradeAverage
+controller.get('/:id/gradeAverage', (req, res) => {
+    const { id } = req.params
+
+    const grades = studentData.students.find(student => student.id === id).grades
+
+    let sum = 0
+    let gradeSum = grades.reduce((prev, curr) => {
+        return Number(prev) + Number(curr)
+    }, sum)
+
+    res.json({
+        message: "The student's grade average is " + gradeSum / grades.length
+    })
+});
+
+
+// Get all students sorted by their last name
+
+
+// Write tests for these new routes
 
 
 
@@ -94,6 +145,24 @@ controller.get('/:id', (req, res) => {
 // that coalesces, into something that makes sense, then say "ok, now I'm going to go ahead and set this
 // up in my database."
 
+
+/* 
+Middleware 
+
+Middleware functions are functions that have access to the request object (req), the response object (res),
+and the next function in the application's request-response cycle. The next function is a function in the 
+Express router which, when invoked, executes the middleware succeeding the current middleware.
+
+Middleware functions can perform the following tasks:
+Execute any code
+Make changes to the request and the response objects
+End the request-response cycle
+Call the next middleware in the stack
+
+If the current middleware function does not end the request-response cycle, it must call next() to pass control 
+to the next middleware function. Otherwise, the request will be left hanging.
+
+*/ 
 
 
 module.exports = controller;
