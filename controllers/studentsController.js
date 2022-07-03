@@ -2,18 +2,20 @@ const express = require('express');
 const controller = express.Router();
 
 const studentData = require('../studentData.json');
+// IMPORTANT!  When using the studentData object in a queries route, deep copy the object and students array so that you do 
+// not mutate the data on each call!
 
 
 // Everytime our server gets contacted, there must be a response
 // For every response, there must be a request
-// Gets all students
+// Gets all students 
 controller.get('/', (req, res) => {
     try {
 
-        let { min, max, limit } = req.query
-        min = Number(min)
-        max = Number(max)
-        limit = Number(limit)
+        let { min, max, limit } = req.query;
+        min = Number(min);
+        max = Number(max);
+        limit = Number(limit);
 
         
         if (limit) {
@@ -22,19 +24,21 @@ controller.get('/', (req, res) => {
             // it would always start with the original studentData object we're requiring, then it would
             // reference the same allocation of space in memory (the original object).
             // So instead, I needed to spread the object's contents in order to make a real copy.
-            let numOfStudents = {...studentData}
-            numOfStudents.students = numOfStudents.students.slice(0, limit)
-            res.json(numOfStudents)
+            let numOfStudents = {...studentData};
+            numOfStudents.students = numOfStudents.students.slice(0, limit);
+            res.json(numOfStudents);
         } 
         else if (min && max) {
-            const studentsArr = []
+            const studentsArr = [];
             for (let student of studentData.students) {
                 if (Number(student.id) >= min && Number(student.id) <= max) {
                     studentsArr.push(student);
                 }
             };
-            studentData.students = studentsArr
-            res.json(studentData)
+            // This line of code was mutating the studentData object. This means that after using the min/max query, and then 
+            // calling the /students route, our studentData.students array now has the previous query number of students!
+            // studentData.students = studentsArr
+            res.json(studentsArr);
         }
         else {
             res.json(studentData);
@@ -81,7 +85,7 @@ controller.get('/:id', (req, res, next) => {
         }
         
     } else {
-        next()
+        next();
     }
 });
 
@@ -93,7 +97,6 @@ controller.get('/:fullName', (req, res) => {
     
     if (isNaN(fullName)) {
 
-        console.log(fullName)
         try {
             
             for (let student of studentData.students) {
@@ -108,7 +111,7 @@ controller.get('/:fullName', (req, res) => {
             res.send('Error with path');
         };
     } else {
-        next()
+        next();
     }
 });
 
@@ -116,18 +119,18 @@ controller.get('/:fullName', (req, res) => {
 // Write a route to get the grade average of a student by their id
 // Ex:  app.com/students/3/gradeAverage
 controller.get('/:id/gradeAverage', (req, res) => {
-    const { id } = req.params
+    const { id } = req.params;
 
-    const grades = studentData.students.find(student => student.id === id).grades
+    const grades = studentData.students.find(student => student.id === id).grades;
 
-    let sum = 0
+    let sum = 0;
     let gradeSum = grades.reduce((prev, curr) => {
-        return Number(prev) + Number(curr)
-    }, sum)
+        return Number(prev) + Number(curr);
+    }, sum);
 
     res.json({
         message: "The student's grade average is " + gradeSum / grades.length
-    })
+    });
 });
 
 
