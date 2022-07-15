@@ -4,20 +4,23 @@ const controller = express.Router();
 const studentData = require('../studentData.json');
 // IMPORTANT!  When using the studentData object in a queries route, deep copy the object and students array so that you do 
 // not mutate the data on each call!
+const { getAllStudents } = require("../queries/students.js")
 
+controller.get('/', async (req, res) => {
+    const allStudents = await getAllStudents();
+    res.json(allStudents);
+});
 
 // Everytime our server gets contacted, there must be a response
 // For every response, there must be a request
 // Gets all students 
 controller.get('/', (req, res) => {
     try {
-
         let { min, max, limit } = req.query;
         min = Number(min);
         max = Number(max);
         limit = Number(limit);
 
-        
         if (limit) {
             // Here, it was failing a test because I was assigning another variable name to the same
             // object, but objects are stored as passed by reference. So every time this file was parsed
