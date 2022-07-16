@@ -4,17 +4,23 @@ const controller = express.Router();
 const studentData = require('../studentData.json');
 // IMPORTANT!  When using the studentData object in a queries route, deep copy the object and students array so that you do 
 // not mutate the data on each call!
-const { getAllStudents } = require("../queries/students.js")
+const { getAllStudents, getOneStudent } = require("../queries/students.js")
 
-controller.get('/', async (req, res) => {
-    const allStudents = await getAllStudents();
-    res.json(allStudents);
-});
+// controller.get('/', async (req, res) => {
+//     const allStudents = await getAllStudents();
+//     res.json(allStudents);
+// });
 
 // Everytime our server gets contacted, there must be a response
 // For every response, there must be a request
 // Gets all students 
-controller.get('/', (req, res) => {
+controller.get('/', async (req, res) => {
+    const allStudents = await getAllStudents();
+    // return res.json({
+    //     students: allStudents
+    // });
+    
+
     try {
         let { min, max, limit } = req.query;
         min = Number(min);
@@ -27,13 +33,17 @@ controller.get('/', (req, res) => {
             // it would always start with the original studentData object we're requiring, then it would
             // reference the same allocation of space in memory (the original object).
             // So instead, I needed to spread the object's contents in order to make a real copy.
-            let numOfStudents = {...studentData};
+            let numOfStudents = {students: allStudents};
+
+            // let numOfStudents = {...studentData};
             numOfStudents.students = numOfStudents.students.slice(0, limit);
+            console.log(numOfStudents)
             res.json(numOfStudents);
         } 
         else if (min && max) {
             const studentsArr = [];
-            for (let student of studentData.students) {
+            for(let student of allStudents) {
+            // for (let student of studentData.students) {
                 if (Number(student.id) >= min && Number(student.id) <= max) {
                     studentsArr.push(student);
                 }
@@ -44,7 +54,7 @@ controller.get('/', (req, res) => {
             res.json(studentsArr);
         }
         else {
-            res.json(studentData);
+            res.json(allStudents);
         }
     } catch (err) {
         res.send("Error with url path");
@@ -62,9 +72,35 @@ controller.get('/', (req, res) => {
 //     res.json(studentDataForDelivery);
 // })
 
+controller.get('/:id', async (req, res) => {
+    const {id} = req.params
+    if (isNaN(id)) {
+        res.status(404).json({ error: "students/id must be a number"})
+    }
+    else 
+    try {
+        const singleStudent = await getOneStudent(id)
+        
+        if (singleStudent.id) {
+            console.log(id)
+            res.json(singleStudent)
+        } else {
+            res.send('student not found')
+        }
 
-// Gets one student
-controller.get('/:id', (req, res, next) => {
+    } catch(e) {
+        res.status(404).json({ error: "student not found", message: e})
+    }
+
+});
+// Gets one student - OLD WAY
+controller.get('/:id', async (req, res, next) => {
+    const oneStudent = await getOneStudent(req.params.id)
+    console.log(oneStudent)
+    return res.json(oneStudent)
+    
+    const allStudents = await getAllStudents();
+
     if (!isNaN(req.params.id)) {
 
         try {
@@ -74,8 +110,9 @@ controller.get('/:id', (req, res, next) => {
                 res.send("student id must be integer");
             }
             
-            const singleStudent = studentData.students.find(student => {
-                return studentId === student.id;
+            // const singleStudent = studentData.students.find(student => {
+            const singleStudent = allStudents.find(student => {
+                return Number(studentId) === student.id;
             });
             
             if (singleStudent) {

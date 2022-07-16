@@ -19,6 +19,10 @@ app.get('/', (request, response) => {
     response.send("Hello World!");
 });
 
+app.get('*', (req, res) => {
+    res.status(404).send("Ivan students API: Page not found");
+});
+
 
 // exporting our app
 module.exports = app;

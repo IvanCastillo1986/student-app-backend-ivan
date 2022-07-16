@@ -19,4 +19,13 @@ const getAllStudents = async () => {
     }
 }
 
-module.exports = { getAllStudents }
+const getOneStudent = async (id) => {
+    try {
+        const singleStudent = await db.oneOrNone('SELECT * FROM students WHERE id = $1', id)
+        return singleStudent
+    } catch (error) {
+        return error
+    }
+}
+
+module.exports = { getAllStudents, getOneStudent }

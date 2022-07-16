@@ -10,6 +10,15 @@ const cn = {
     user: process.env.PG_USER
 }
 
+// I can also set up a connection string, for which I'd need the 
+// database URL.  It can be passed in directly:
+// const db = pgp('postgres://john:pass123@localhost:5432/products');
+// or as a parameter within the configuration object (which then combines the values):
+// const cn = {
+//      connectionString: 'postgres://john:pass123@localhost:5432/products',
+//      max: 30
+// };
+
 // Now we have set up the connection. 
 // We will pass an object with the necessary information in order to connect our server with our database.
 // We'll bring in variables from our .env file.
