@@ -37,7 +37,6 @@ controller.get('/', async (req, res) => {
 
             // let numOfStudents = {...studentData};
             numOfStudents.students = numOfStudents.students.slice(0, limit);
-            console.log(numOfStudents)
             res.json(numOfStudents);
         } 
         else if (min && max) {
@@ -72,17 +71,18 @@ controller.get('/', async (req, res) => {
 //     res.json(studentDataForDelivery);
 // })
 
-controller.get('/:id', async (req, res) => {
+controller.get('/:id', async (req, res, next) => {
     const {id} = req.params
     if (isNaN(id)) {
-        res.status(404).json({ error: "students/id must be a number"})
+        // if not a number, sends to next query to check if path is fullname
+        next()
     }
     else 
     try {
         const singleStudent = await getOneStudent(id)
         
         if (singleStudent.id) {
-            console.log(id)
+            // console.log(id)
             res.json(singleStudent)
         } else {
             res.send('student not found')
@@ -93,60 +93,27 @@ controller.get('/:id', async (req, res) => {
     }
 
 });
-// Gets one student - OLD WAY
-controller.get('/:id', async (req, res, next) => {
-    const oneStudent = await getOneStudent(req.params.id)
-    console.log(oneStudent)
-    return res.json(oneStudent)
-    
-    const allStudents = await getAllStudents();
-
-    if (!isNaN(req.params.id)) {
-
-        try {
-            const studentId = req.params.id;
-            
-            if (typeof Number(studentId) !== 'number') {
-                res.send("student id must be integer");
-            }
-            
-            // const singleStudent = studentData.students.find(student => {
-            const singleStudent = allStudents.find(student => {
-                return Number(studentId) === student.id;
-            });
-            
-            if (singleStudent) {
-                res.json(singleStudent);
-            } else {
-                res.status(404).send("Student not found");
-            }
-        } catch(err) {
-            res.status(500).send("An error has occurred");
-        }
-        
-    } else {
-        next();
-    }
-});
 
 
 // Write a route that finds student based on fullName
 // Ex:  app.com/students/ivancastillo
-controller.get('/:fullName', (req, res) => {
-    const { fullName } = req.params
-    
-    if (isNaN(fullName)) {
+controller.get('/:fullName', async (req, res, next) => {
+    const { fullName } = req.params;
 
+    if (isNaN(fullName)) {
+        
         try {
+            const allStudents = await getAllStudents();
             
-            for (let student of studentData.students) {
-                let fullStudentName = student.firstName + student.lastName;
+            for (let student of allStudents) {
+                let fullStudentName = student.firstname + student.lastname;
                 
                 if (fullName.toLowerCase() === fullStudentName.toLowerCase()) {
-                    return res.json(student);
+                    res.json(student);
+                    return;
                 }
             };
-            res.send('student name not found');
+            res.send('Student name not found. Please enter full name.');
         } catch (err) {
             res.send('Error with path');
         };
@@ -158,19 +125,26 @@ controller.get('/:fullName', (req, res) => {
 
 // Write a route to get the grade average of a student by their id
 // Ex:  app.com/students/3/gradeAverage
-controller.get('/:id/gradeAverage', (req, res) => {
+controller.get('/:id/gradeAverage', async (req, res) => {
     const { id } = req.params;
 
-    const grades = studentData.students.find(student => student.id === id).grades;
+    try {
+        const allStudents = await getAllStudents() 
+        console.log(allStudents)
 
-    let sum = 0;
-    let gradeSum = grades.reduce((prev, curr) => {
-        return Number(prev) + Number(curr);
-    }, sum);
+        const grades = studentData.students.find(student => student.id === id).grades;
 
-    res.json({
-        message: "The student's grade average is " + gradeSum / grades.length
-    });
+        let sum = 0;
+        let gradeSum = grades.reduce((prev, curr) => {
+            return Number(prev) + Number(curr);
+        }, sum);
+
+        res.json({
+            message: "The student's grade average is " + gradeSum / grades.length
+        });
+    } catch (error) {
+        return res.send('Student id or pathname is wrong. Check and try again.')
+    }
 });
 
 
