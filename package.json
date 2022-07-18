@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "test": "jest"
+    "test": "jest",
+    "db_init": "psql -U postgres -f db/schema.sql",
+    "db_seed": "psql -U postgres -f db/seed.sql"
   },
   "author": "Ivan Castillo",
   "license": "ISC",
