@@ -13,3 +13,10 @@ CREATE TABLE students (
     city TEXT,
     skill TEXT
 );
+
+CREATE TABLE grades (
+    id SERIAL PRIMARY KEY,
+    student_id INT REFERENCES students(id),
+    grade VARCHAR DEFAULT '0',
+    date_tested DATE NOT NULL DEFAULT CURRENT_DATE
+);
