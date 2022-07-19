@@ -4,7 +4,8 @@ const controller = express.Router();
 const studentData = require('../studentData.json');
 // IMPORTANT!  When using the studentData object in a queries route, deep copy the object and students array so that you do 
 // not mutate the data on each call!
-const { getAllStudents, getOneStudent } = require("../queries/students.js")
+const { getAllStudents, getOneStudent } = require("../queries/students.js");
+const db = require('../db/dbConfig');
 
 // controller.get('/', async (req, res) => {
 //     const allStudents = await getAllStudents();
@@ -146,6 +147,20 @@ controller.get('/:id/gradeAverage', async (req, res) => {
         return res.send('Student id or pathname is wrong. Check and try again.')
     }
 });
+
+
+controller.get('/:id/grades', async (req, res) => {
+    const studentId = req.params.id;
+    try {
+        const grades = await db.any('SELECT * FROM grades WHERE student_id = $1', studentId);
+        grades.sort((a, b) => b.grade - a.grade) // sorts by highest to lowest grade, can be applied to a const variable
+        res.json(grades);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+
 
 
 // Get all students sorted by their last name
