@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS djc05eu2fpavk;
-CREATE DATABASE djc05eu2fpavk;
+DROP DATABASE IF EXISTS d522dfvh2pmtqp;
+CREATE DATABASE d522dfvh2pmtqp;
 
-\c djc05eu2fpavk;
+\c d522dfvh2pmtqp;
 
 CREATE TABLE students (
     id SERIAL PRIMARY KEY,
