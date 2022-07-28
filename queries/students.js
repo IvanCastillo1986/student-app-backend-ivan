@@ -28,4 +28,44 @@ const getOneStudent = async (id) => {
     }
 }
 
-module.exports = { getAllStudents, getOneStudent }
+const createStudent = async (student) => {
+    try {
+        if (!student.firstName) {
+            throw 'You must specify a value for "name"';
+        }
+
+        const {firstName, lastName, email, company, pic, city, skill} = student;
+
+        const newStudent = await db.one(
+            'INSERT INTO students (firstName, lastName, email, company, pic, city, skill) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [firstName, lastName, email, company, pic, city, skill]
+        );
+        return newStudent;
+    } catch (err) {
+        return err;
+    }
+}
+
+const deleteStudent = async (id) => {
+    try {
+        const deletedStudent = await db.one('DELETE FROM students WHERE id = $1 RETURNING *', id);
+        return deletedStudent;
+    } catch (err) {
+        return err;
+    }
+};
+
+const updateStudent = async (studentId, student) => {
+    try {
+        const {firstName, lastName, email, company, pic, city, skill} = student
+        const updatedStudent = await db.one(
+            'UPDATE students SET firstname=$1, lastname=$2, email=$3, company=$4, pic=$5, city=$6, skill=$7 WHERE id=$8 RETURNING *',
+            [firstName, lastName, email, company, pic, city, skill, studentId]
+            );
+        return updatedStudent;
+    } catch (err) {
+        return err
+    }
+};
+
+module.exports = { getAllStudents, getOneStudent, createStudent, deleteStudent, updateStudent };

@@ -10,6 +10,7 @@ const studentsController = require('./controllers/studentsController');
 const namesController = require('./controllers/namesController');
 
 // Whenever an address comes in with the '/students' path, it will be routed over to the studentsController 
+app.use(express.json());
 app.use(cors());
 app.use('/students', studentsController);
 app.use('/names', namesController);

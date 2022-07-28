@@ -4,23 +4,15 @@ const controller = express.Router();
 const studentData = require('../studentData.json');
 // IMPORTANT!  When using the studentData object in a queries route, deep copy the object and students array so that you do 
 // not mutate the data on each call!
-const { getAllStudents, getOneStudent } = require("../queries/students.js");
+const { getAllStudents, getOneStudent, createStudent, deleteStudent, updateStudent } = require("../queries/students.js");
 const db = require('../db/dbConfig');
 
-// controller.get('/', async (req, res) => {
-//     const allStudents = await getAllStudents();
-//     res.json(allStudents);
-// });
 
 // Everytime our server gets contacted, there must be a response
 // For every response, there must be a request
 // Gets all students 
 controller.get('/', async (req, res) => {
     const allStudents = await getAllStudents();
-    // return res.json({
-    //     students: allStudents
-    // });
-    
 
     try {
         let { min, max, limit } = req.query;
@@ -161,6 +153,46 @@ controller.get('/:id/grades', async (req, res) => {
 });
 
 
+controller.post('/', async (req, res) => {
+    try {
+        const newStudent = await createStudent(req.body);
+        if (newStudent["firstname"]) {
+            console.log(req.body)
+            res.status(200).json(newStudent);
+        } else {
+            console.log('Trying to post in studentsController')
+            console.log(`Database error: ${student}.`);
+            throw `Error adding ${req.body} to the database.`
+        }
+    } catch (err) {
+        res.status(404).json({ error: err });
+    }
+});
+
+
+controller.delete('/:id', async (req, res) => {
+    try {
+        const deletedStudent = await deleteStudent(req.params.id);
+        res.json(deletedStudent);
+    } catch (e) {
+        res.status(404).json({ error: e });
+    }
+});
+
+
+controller.put('/:id', async (req, res) => {
+    const { id } = req.params
+    // console.log(id, req.body)
+    try {
+        console.log('studentsController working')
+        const updatedStudent = await updateStudent(id, req.body);
+        console.log(updatedStudent)
+        // res.status(200).json({id});
+        res.status(200).json(updatedStudent);
+    } catch (e) {
+        res.status(404).json({ error: e })
+    }
+});
 
 
 // Get all students sorted by their last name
