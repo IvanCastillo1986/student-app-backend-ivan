@@ -48,6 +48,8 @@ const createStudent = async (student) => {
 
 const deleteStudent = async (id) => {
     try {
+        await db.none('DELETE FROM grades WHERE student_id = $1', id)
+
         const deletedStudent = await db.one('DELETE FROM students WHERE id = $1 RETURNING *', id);
         return deletedStudent;
     } catch (err) {
@@ -58,6 +60,7 @@ const deleteStudent = async (id) => {
 const updateStudent = async (studentId, student) => {
     try {
         const {firstName, lastName, email, company, pic, city, skill} = student
+
         const updatedStudent = await db.one(
             'UPDATE students SET firstname=$1, lastname=$2, email=$3, company=$4, pic=$5, city=$6, skill=$7 WHERE id=$8 RETURNING *',
             [firstName, lastName, email, company, pic, city, skill, studentId]
