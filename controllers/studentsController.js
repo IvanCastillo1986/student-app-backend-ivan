@@ -6,6 +6,9 @@ const studentData = require('../studentData.json');
 // not mutate the data on each call!
 const { getAllStudents, getOneStudent, createStudent, deleteStudent, updateStudent } = require("../queries/students.js");
 const db = require('../db/dbConfig');
+const isValidEmail = require('../utils/EmailValidation');
+
+
 
 
 // Everytime our server gets contacted, there must be a response
@@ -152,8 +155,17 @@ controller.get('/:id/grades', async (req, res) => {
     }
 });
 
-
 controller.post('/', async (req, res) => {
+    if (!req.body.email) {
+        res.send('Must contain e-mail')
+        return
+    }
+
+    if (!isValidEmail(req.body.email)) {
+        res.send('E-mail must be valid')
+        return
+    }
+
     try {
         const newStudent = await createStudent(req.body);
         if (newStudent["firstname"]) {
@@ -182,12 +194,10 @@ controller.delete('/:id', async (req, res) => {
 
 controller.put('/:id', async (req, res) => {
     const { id } = req.params
-    // console.log(id, req.body)
+
     try {
-        console.log('studentsController working')
         const updatedStudent = await updateStudent(id, req.body);
         console.log(updatedStudent)
-        // res.status(200).json({id});
         res.status(200).json(updatedStudent);
     } catch (e) {
         res.status(404).json({ error: e })
